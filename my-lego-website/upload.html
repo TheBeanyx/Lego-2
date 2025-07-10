@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lego Összeszerelési Útmutatók - Feltöltés</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="logo">Lego összeszerelési útmutatók</div>
+        <nav>
+            <a href="index.html" class="nav-button">LEGO ÖSSZESZERELÉSI ÚTMUTATÓK</a>
+            <a href="upload.html" class="nav-button active">TÖLTS FEL TE IS!</a>
+        </nav>
+    </header>
+
+    <main class="upload-page">
+        <section class="intro-section upload-content-center">
+            <h1>Tölts fel te is!</h1>
+            <p>Tölts fel te is lego útmutatókat hogy mások elérhessék!</p>
+            <p>Töltsd ki az alábbi űrlapot majd küldj egy e-mailt a <a href="mailto:legoosszeszerelesiutmutatok@gmail.com">legoosszeszerelesiutmutatok@gmail.com</a> címre</p>
+            <p class="arrow-down">↓↓↓</p>
+        </section>
+
+        <section class="form-section">
+            <h1 class="upload-content-center">Feltöltés</h1>
+            <p class="upload-content-center">Kérjük töltsd ki az alábbi űrlapot, hogy eltudjuk küldeni Önnek az e-mailt.</p>
+
+            <p class="upload-content-center"><b>E-mail-os kód</b> - E-mailban küldünk Önnek (a megadott e-mail címre) egy e-mailt amiben egy <b>8 jegyű kódot</b> amit ha begépel feltöltheti a fájlokat.</p>
+            <p class="upload-content-center"><b>PDF-küldése e-mailban</b> - Ez esetben is küldünk önnek egy e-mailt és kérjük, hogy ugyan arra a gmail címre (legoosszeszerelesiutmutatok@gmail.com) küldje el az útmutatót <b>PDF</b> formátumban.</p>
+
+            <p class="email-warning upload-content-center">Amennyiben nem a <b>legoosszeszerelesiutmutatok@gmail.com</b> e-mail címről kapja az e-mailt abban az esetben nem mi küldtük Önnek!!!</p>
+
+            <form id="uploadRequestForm">
+                <div class="input-group">
+                    <label for="usernameInput">Kérjük adjon meg egy felhasználó nevet (az e-mail-os igazoláshoz <b>NE az igazi nevét adja meg!!!</b>)</label>
+                    <input type="text" id="usernameInput" required>
+                </div>
+                <div class="input-group">
+                    <label for="emailInput">Adjon meg egy e-mail címet amelyre küldhetjük az e-mailt *</label>
+                    <input type="email" id="emailInput" required>
+                </div>
+                <div class="input-group checkbox-group">
+                    <input type="checkbox" id="consentCheckbox" required>
+                    <label for="consentCheckbox">Megértettem hogy a megadott e-mail címre küldeni fognak egy e-mailt. *</label>
+                </div>
+                <button type="submit">Küldés</button>
+            </form>
+        </section>
+    </main>
+
+    <script src="upload-script.js"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lego Összeszerelési Útmutatók</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="logo">Lego összeszerelési útmutatók</div>
+        <nav>
+            <a href="index.html" class="nav-button active">LEGO ÖSSZESZERELÉSI ÚTMUTATÓK</a>
+            <a href="upload.html" class="nav-button">TÖLTS FEL TE IS!</a>
+        </nav>
+    </header>
+
+    <main class="search-page full-height-content">
+        <section class="search-section">
+            <h2 class="main-heading">Kérjük adja meg a lego készletszámát</h2>
+            <div class="input-group">
+                <label for="legoNumberInput">A lego készletszáma</label>
+                <input type="number" id="legoNumberInput" placeholder="">
+                <button id="sendButton">Küldés</button>
+            </div>
+            <div id="searchMessage" class="message"></div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
