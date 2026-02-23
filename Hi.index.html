@@ -1,227 +1,192 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QR-kód olvasó naplóval</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Creator & Scanner</title>
 
-  <!-- QR scanner könyvtár -->
-  <script src="https://unpkg.com/html5-qrcode"></script>
+<!-- Könyvtárak -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      margin: 0;
-      padding: 15px;
-    }
+<style>
+body {
+  font-family: system-ui, sans-serif;
+  background: linear-gradient(135deg, #4f46e5, #22c55e);
+  margin: 0;
+  padding: 15px;
+  color: #111;
+}
 
-    h1 {
-      text-align: center;
-    }
+.container {
+  max-width: 420px;
+  margin: auto;
+  background: #fff;
+  border-radius: 16px;
+  padding: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
 
-    #reader {
-      width: 100%;
-      max-width: 400px;
-      margin: auto;
-    }
+h1, h2 {
+  text-align: center;
+}
 
-    button {
-      padding: 10px;
-      margin: 5px 0;
-      width: 100%;
-      font-size: 16px;
-    }
+.section {
+  margin-bottom: 20px;
+}
 
-    .log {
-      margin-top: 20px;
-      background: white;
-      padding: 10px;
-      border-radius: 5px;
-    }
+input, button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-size: 16px;
+}
 
-    .log-item {
-      border-bottom: 1px solid #ddd;
-      padding: 5px 0;
-      font-size: 14px;
-    }
-  </style>
+button {
+  background: #4f46e5;
+  color: white;
+  border: none;
+}
+
+button.secondary {
+  background: #22c55e;
+}
+
+button.stop {
+  background: #ef4444;
+}
+
+#qrcode {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+#reader {
+  width: 100%;
+}
+
+.log {
+  max-height: 200px;
+  overflow-y: auto;
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.log-item {
+  border-bottom: 1px solid #ddd;
+  padding: 6px 0;
+}
+</style>
 </head>
+
 <body>
+<div class="container">
 
-<h1>📷 QR-kód olvasó</h1>
+<h1>📷 QR Creator & Scanner</h1>
 
-<div id="reader"></div>
+<!-- CREATOR -->
+<div class="section">
+  <h2>✍️ QR Creator</h2>
+  <input type="text" id="nameInput" placeholder="Írd be a nevet">
+  <button class="secondary" onclick="createQR()">QR létrehozása</button>
+  <div id="qrcode"></div>
+</div>
 
-<button onclick="startCamera()">📷 Kamera indítása</button>
-<button onclick="stopCamera()">⛔ Kamera leállítása</button>
+<!-- SCANNER -->
+<div class="section">
+  <h2>📷 QR Olvasó</h2>
+  <div id="reader"></div>
+  <button onclick="startCamera()">Kamera indítása</button>
+  <button class="stop" onclick="stopCamera()">Kamera leállítása</button>
+  <input type="file" id="fileInput" accept="image/*">
+</div>
 
-<hr>
+<!-- LOG -->
+<div class="section">
+  <h2>📒 Napló</h2>
+  <div class="log" id="logList"></div>
+</div>
 
-<h3>🖼️ QR-kód képből</h3>
-<input type="file" id="fileInput" accept="image/*">
-
-<div class="log">
-  <h3>📒 Beolvasott QR-kódok</h3>
-  <div id="logList"></div>
 </div>
 
 <script>
-  const logList = document.getElementById("logList");
-  const html5QrCode = new Html5Qrcode("reader");
+const html5QrCode = new Html5Qrcode("reader");
+const logList = document.getElementById("logList");
+let lastQRData = "";
 
-  function addToLog(text) {
-    const time = new Date().toLocaleString();
-    const div = document.createElement("div");
-    div.className = "log-item";
-    div.textContent = `[${time}] ${text}`;
-    logList.prepend(div);
+// QR létrehozás
+function createQR() {
+  const name = document.getElementById("nameInput").value.trim();
+  if (!name) {
+    alert("Írj be egy nevet!");
+    return;
   }
 
-  function startCamera() {
-    Html5Qrcode.getCameras().then(cameras => {
-      if (cameras.length > 0) {
-        html5QrCode.start(
-          cameras[0].id,
-          { fps: 10, qrbox: 250 },
-          qrCodeMessage => {
-            addToLog(qrCodeMessage);
-          }
-        );
-      }
-    });
-  }
+  const id = Math.floor(100000 + Math.random() * 900000);
+  const data = `Nev: ${name}\nAzonosito: ${id}`;
 
-  function stopCamera() {
-    html5QrCode.stop().catch(() => {});
-  }
-
-  document.getElementById("fileInput").addEventListener("change", e => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    html5QrCode.scanFile(file, true)
-      .then(decodedText => {
-        addToLog(decodedText);
-      })
-      .catch(() => {
-        alert("Nem található QR-kód a képen.");
-      });
+  document.getElementById("qrcode").innerHTML = "";
+  new QRCode(document.getElementById("qrcode"), {
+    text: data,
+    width: 180,
+    height: 180
   });
+}
+
+// Naplózás
+function addToLog(name, id) {
+  const time = new Date().toLocaleString();
+  const div = document.createElement("div");
+  div.className = "log-item";
+  div.textContent = `${name} | ${id} | ${time}`;
+  logList.prepend(div);
+}
+
+// Feldolgozás
+function handleQR(text) {
+  if (text === lastQRData) return;
+  lastQRData = text;
+
+  const nameMatch = text.match(/Nev:\s*(.*)/);
+  const idMatch = text.match(/Azonosito:\s*(\d+)/);
+
+  if (nameMatch && idMatch) {
+    addToLog(nameMatch[1], idMatch[1]);
+  }
+}
+
+// Kamera
+function startCamera() {
+  Html5Qrcode.getCameras().then(cameras => {
+    if (cameras.length) {
+      html5QrCode.start(
+        cameras[0].id,
+        { fps: 10, qrbox: 250 },
+        qrText => handleQR(qrText)
+      );
+    }
+  });
+}
+
+function stopCamera() {
+  html5QrCode.stop().catch(()=>{});
+}
+
+// Képfeltöltés
+document.getElementById("fileInput").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  html5QrCode.scanFile(file, true)
+    .then(text => handleQR(text))
+    .catch(() => alert("Nincs QR-kód a képen."));
+});
 </script>
 
 </body>
-</html><!DOCTYPE html>
-<html lang="hu">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QR-kód olvasó naplóval</title>
-
-  <!-- QR scanner könyvtár -->
-  <script src="https://unpkg.com/html5-qrcode"></script>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      margin: 0;
-      padding: 15px;
-    }
-
-    h1 {
-      text-align: center;
-    }
-
-    #reader {
-      width: 100%;
-      max-width: 400px;
-      margin: auto;
-    }
-
-    button {
-      padding: 10px;
-      margin: 5px 0;
-      width: 100%;
-      font-size: 16px;
-    }
-
-    .log {
-      margin-top: 20px;
-      background: white;
-      padding: 10px;
-      border-radius: 5px;
-    }
-
-    .log-item {
-      border-bottom: 1px solid #ddd;
-      padding: 5px 0;
-      font-size: 14px;
-    }
-  </style>
-</head>
-<body>
-
-<h1>📷 QR-kód olvasó</h1>
-
-<div id="reader"></div>
-
-<button onclick="startCamera()">📷 Kamera indítása</button>
-<button onclick="stopCamera()">⛔ Kamera leállítása</button>
-
-<hr>
-
-<h3>🖼️ QR-kód képből</h3>
-<input type="file" id="fileInput" accept="image/*">
-
-<div class="log">
-  <h3>📒 Beolvasott QR-kódok</h3>
-  <div id="logList"></div>
-</div>
-
-<script>
-  const logList = document.getElementById("logList");
-  const html5QrCode = new Html5Qrcode("reader");
-
-  function addToLog(text) {
-    const time = new Date().toLocaleString();
-    const div = document.createElement("div");
-    div.className = "log-item";
-    div.textContent = `[${time}] ${text}`;
-    logList.prepend(div);
-  }
-
-  function startCamera() {
-    Html5Qrcode.getCameras().then(cameras => {
-      if (cameras.length > 0) {
-        html5QrCode.start(
-          cameras[0].id,
-          { fps: 10, qrbox: 250 },
-          qrCodeMessage => {
-            addToLog(qrCodeMessage);
-          }
-        );
-      }
-    });
-  }
-
-  function stopCamera() {
-    html5QrCode.stop().catch(() => {});
-  }
-
-  document.getElementById("fileInput").addEventListener("change", e => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    html5QrCode.scanFile(file, true)
-      .then(decodedText => {
-        addToLog(decodedText);
-      })
-      .catch(() => {
-        alert("Nem található QR-kód a képen.");
-      });
-  });
-</script>
-
-</body>
-    </html>
+</html>
