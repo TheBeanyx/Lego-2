@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cyber QR System</title>
+
+<!-- Libraries -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+
+<style>
+:root {
+  --neon1: #00f0ff;
+  --neon2: #7c7cff;
+  --bg: #f9fbff;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background:
+    radial-gradient(circle at top, #ffffff, #eaf2ff);
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.container {
+  max-width: 420px;
+  margin: auto;
+  background: white;
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow:
+    0 0 30px rgba(0,240,255,0.25),
+    0 0 60px rgba(124,124,255,0.15);
+  border: 1px solid rgba(0,240,255,0.4);
+}
+
+h1, h2 {
+  text-align: center;
+  color: #0a0a0a;
+  text-shadow: 0 0 8px rgba(0,240,255,0.5);
+}
+
+.section {
+  margin-bottom: 25px;
+}
+
+input, button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  border-radius: 12px;
+  font-size: 16px;
+}
+
+input {
+  border: 1px solid var(--neon1);
+  background: #ffffff;
+}
+
+button {
+  border: none;
+  color: #fff;
+  background: linear-gradient(135deg, var(--neon1), var(--neon2));
+  box-shadow: 0 0 15px rgba(0,240,255,0.6);
+}
+
+button:hover {
+  filter: brightness(1.1);
+}
+
+button.stop {
+  background: linear-gradient(135deg, #ff3b3b, #ff7b7b);
+  box-shadow: 0 0 15px rgba(255,60,60,0.6);
+}
+
+#qrcode {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 14px;
+  background: white;
+  box-shadow: inset 0 0 15px rgba(0,240,255,0.25);
+}
+
+.download {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.download a {
+  display: inline-block;
+  padding: 10px 15px;
+  border-radius: 12px;
+  color: white;
+  text-decoration: none;
+  background: linear-gradient(135deg, #00ffa6, #00c2ff);
+  box-shadow: 0 0 15px rgba(0,255,200,0.6);
+}
+
+#reader {
+  width: 100%;
+}
+
+.log {
+  max-height: 220px;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: inset 0 0 15px rgba(124,124,255,0.25);
+  font-size: 14px;
+}
+
+.log-item {
+  border-bottom: 1px dashed rgba(0,240,255,0.6);
+  padding: 6px 0;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>⚡ CYBER QR SYSTEM</h1>
+
+<!-- CREATOR -->
+<div class="section">
+  <h2>✍️ QR Creator</h2>
+  <input id="nameInput" placeholder="Név megadása">
+  <button onclick="createQR()">QR létrehozása</button>
+  <div id="qrcode"></div>
+  <div class="download" id="downloadArea"></div>
+</div>
+
+<!-- SCANNER -->
+<div class="section">
+  <h2>📷 QR Scanner</h2>
+  <div id="reader"></div>
+  <button onclick="startCamera()">Kamera indítása</button>
+  <button class="stop" onclick="stopCamera()">Kamera leállítása</button>
+  <input type="file" id="fileInput" accept="image/*">
+</div>
+
+<!-- LOG -->
+<div class="section">
+  <h2>📒 Napló</h2>
+  <div class="log" id="logList"></div>
+</div>
+
+</div>
+
+<script>
+const html5QrCode = new Html5Qrcode("reader");
+const logList = document.getElementById("logList");
+let lastScan = "";
+
+// CREATE QR
+function createQR() {
+  const name = nameInput.value.trim();
+  if (!name) return alert("Adj meg egy nevet!");
+
+  const id = Math.floor(100000 + Math.random() * 900000);
+  const text = `Nev: ${name}\nAzonosito: ${id}`;
+
+  qrcode.innerHTML = "";
+  downloadArea.innerHTML = "";
+
+  const qr = new QRCode(qrcode, {
+    text,
+    width: 200,
+    height: 200
+  });
+
+  setTimeout(() => {
+    const img = qrcode.querySelector("img");
+    const link = document.createElement("a");
+    link.href = img.src;
+    link.download = `QR_${name}_${id}.png`;
+    link.textContent = "⬇️ QR letöltése";
+    downloadArea.appendChild(link);
+  }, 300);
+}
+
+// LOG
+function addToLog(name, id) {
+  const time = new Date().toLocaleString();
+  const div = document.createElement("div");
+  div.className = "log-item";
+  div.textContent = `${name} | ${id} | ${time}`;
+  logList.prepend(div);
+}
+
+// HANDLE SCAN
+function handleQR(text) {
+  if (text === lastScan) return;
+  lastScan = text;
+
+  const n = text.match(/Nev:\s*(.*)/);
+  const i = text.match(/Azonosito:\s*(\d+)/);
+
+  if (n && i) addToLog(n[1], i[1]);
+}
+
+// CAMERA
+function startCamera() {
+  Html5Qrcode.getCameras().then(cams => {
+    if (cams.length) {
+      html5QrCode.start(
+        cams[0].id,
+        { fps: 10, qrbox: 250 },
+        txt => handleQR(txt)
+      );
+    }
+  });
+}
+
+function stopCamera() {
+  html5QrCode.stop().catch(()=>{});
+}
+
+// IMAGE UPLOAD
+fileInput.addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  html5QrCode.scanFile(file, true)
+    .then(txt => handleQR(txt))
+    .catch(()=>alert("Nincs QR a képen"));
+});
+</script>
+
+</body>
+</html>
