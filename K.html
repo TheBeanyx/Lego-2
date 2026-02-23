@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>Hangulat alapú vaku</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    button {
+      font-size: 18px;
+      padding: 12px 20px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+    #info {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎶 Zene → Vaku 🎶</h1>
+  <p>Mikrofon alapján érzékeli a tempót és ahhoz igazítja a vakut.</p>
+  <button id="startBtn">Indítás</button>
+
+  <div id="info">Még nincs indítva</div>
+
+<script>
+let audioCtx, analyser, dataArray;
+let videoTrack = null;
+let flashInterval = null;
+
+async function startSystem() {
+  document.getElementById("info").innerText = "Engedélyek kérése...";
+
+  // Mikrofon
+  const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 256;
+
+  const source = audioCtx.createMediaStreamSource(audioStream);
+  source.connect(analyser);
+
+  dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+  // Kamera (vakuhoz)
+  const videoStream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: "environment" }
+  });
+  videoTrack = videoStream.getVideoTracks()[0];
+
+  document.getElementById("info").innerText = "Fut... hallgatózás 🎧";
+  analyzeSound();
+}
+
+function analyzeSound() {
+  analyser.getByteFrequencyData(dataArray);
+
+  // Átlagos hangerő
+  let sum = 0;
+  for (let i = 0; i < dataArray.length; i++) {
+    sum += dataArray[i];
+  }
+  let volume = sum / dataArray.length;
+
+  // Tempó becslés hangerő alapján
+  let speed;
+  if (volume < 30) {
+    speed = 1200; // lassú zene
+    document.getElementById("info").innerText = "Lassú hangulat 🕯️";
+  } else if (volume < 70) {
+    speed = 600; // közepes
+    document.getElementById("info").innerText = "Közepes tempó 🎶";
+  } else {
+    speed = 200; // pörgős
+    document.getElementById("info").innerText = "Pörgős koncert 🔥";
+  }
+
+  startFlashing(speed);
+  requestAnimationFrame(analyzeSound);
+}
+
+function startFlashing(interval) {
+  if (flashInterval) clearInterval(flashInterval);
+
+  let on = false;
+  flashInterval = setInterval(() => {
+    if (!videoTrack) return;
+
+    videoTrack.applyConstraints({
+      advanced: [{ torch: on }]
+    }).catch(() => {});
+
+    on = !on;
+  }, interval);
+}
+
+document.getElementById("startBtn").addEventListener("click", () => {
+  startSystem().catch(err => {
+    alert("Hiba vagy nincs támogatás: " + err.message);
+  });
+});
+</script>
+
+</body>
+</html>
