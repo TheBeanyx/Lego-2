@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Kód Olvasó</title>
+    <script src="https:                                                                  
+</head>
+<body>
+    <h1>QR Kód Olvasó</h1>
+    <input type="file" id="qr-input" accept="image/*">
+    <button id="scan-btn">Képből Olvas</button>
+    <div id="camera-container"></div>
+    <button id="start-camera-btn">Kamera Indítás</button>
+    <h2>Naplo:</h2>
+    <ul id="log"></ul>
+
+    <script>
+        const qrInput = document.getElementById('qr-input');
+        const scanBtn = document.getElementById('scan-btn');
+        const cameraContainer = document.getElementById('camera-container');
+        const startCameraBtn = document.getElementById('start-camera-btn');
+        const logList = document.getElementById('log');
+
+        let html5QrCode;
+
+        scanBtn.addEventListener('click', () => {
+            const file = qrInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        html5QrCode.scanFile(img)
+                            .then((result) => {
+                                addLog(result);
+                            })
+                            .catch((err) => {
+                                console.error(err);
+                            });
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        startCameraBtn.addEventListener('click', () => {
+            html5QrCode = new Html5Qrcode('camera-container');
+            html5QrCode.start(
+                { facingMode: "environment" },
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                },
+                (qrCodeMessage) => {
+                    addLog(qrCodeMessage);
+                },
+                (errorMessage) => {
+                    console.log(errorMessage);
+                }
+            ).catch((err) => {
+                console.error(err);
+            });
+        });
+
+        function addLog(message) {
+            const li = document.createElement('li');
+            li.textContent = message;
+            logList.appendChild(li);
+        }
+    </script>
+</body>
+</html>
